@@ -43,7 +43,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
     {
         if(tracker_state == DETECTING)      // 空的&&检测状态，不参与函数
         {
-            enemy_armors = Armor();
+            enermy_armor = Armor();
             tracking_id = 0;
             lost_aim_cnt = 0;
             change_aim_cnt = 0;
@@ -60,7 +60,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                 lost_aim_cnt = 0;
                 change_aim_cnt = 0;
                 isChangeSameID = false;
-                enemy_armors = Armor();
+                enermy_armor = Armor();
             }
         }
         else if(tracker_state == LOSING)        // 空的&&丢失状态，丢失++
@@ -73,7 +73,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                 lost_aim_cnt = 0;
                 change_aim_cnt = 0;
                 isChangeSameID = false;
-                enemy_armors = Armor();
+                enermy_armor = Armor();
             }
         }
 
@@ -97,7 +97,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
             // 初始化x_k1
 ////            KF.initial(find_armors[0].current_position);
 
-            enemy_armors = find_armors[0];
+            enermy_armor = find_armors[0];
             tracking_id = find_armors[0].id;
             tracker_state = TRACKING;
         }
@@ -107,13 +107,13 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
             find_armors[0].current_position = getRealPosition(find_armors[0]);
 
             // 本帧的真实坐标和上一帧的真实坐标，如果上一帧处在丢失状态呢？新旧坐标的保存以及时间的准确；记得清空上一帧的enemy再emplace_back-----------------------------------------
-            double new_old_distance = (find_armors[0].current_position - enemy_armors.current_position).norm();
+            double new_old_distance = (find_armors[0].current_position - enermy_armor.current_position).norm();
 
             // 不是检测状态，代表有enemy历史记录，相同ID且符合阈值，即可继续跟踪，否则为丢失
             if(find_armors[0].id == tracking_id || new_old_distance > new_old_threshold)
             {
                 // 这一帧的放进去，转到下一帧这个就是上一帧的旧位置
-                enemy_armors = find_armors[0];
+                enermy_armor = find_armors[0];
 
                 tracker_state = TRACKING;
             }
@@ -125,7 +125,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                     tracker_state = DETECTING;
                     tracking_id = 0;
                     lost_aim_cnt = 0;
-                    enemy_armors = Armor();
+                    enermy_armor = Armor();
                 }
                 else
                 {
@@ -161,7 +161,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
             }
 
             find_armors[index].current_position = getRealPosition(find_armors[index]);
-            enemy_armors = find_armors[index];
+            enermy_armor = find_armors[index];
 
             // 初始化x_k1
 ////            KF.initial(find_armors[0].current_position);
@@ -181,10 +181,10 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                     //把装甲板的中心点转换到陀螺仪坐标系下
                     find_armors[i].current_position = getRealPosition(find_armors[i]);
 
-                    double new_old_distance = (find_armors[i].current_position - enemy_armors.current_position).norm();
+                    double new_old_distance = (find_armors[i].current_position - enermy_armor.current_position).norm();
                     if(new_old_distance < new_old_threshold)
                     {
-                        enemy_armors = find_armors[i];
+                        enermy_armor = find_armors[i];
                         isFind = true;
                         break;
                     }
@@ -198,7 +198,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                         }
                         if(change_aim_cnt > change_aim_threshold)
                         {
-                            enemy_armors = find_armors[i];
+                            enermy_armor = find_armors[i];
                             isFind = true;
                             isChangeSameID =true;
                             break;
@@ -219,7 +219,7 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
                     tracker_state = DETECTING;
                     tracking_id = 0;
                     lost_aim_cnt = 0;
-                    enemy_armors = Armor();
+                    enermy_armor = Armor();
                 }
                 else
                 {
@@ -230,40 +230,6 @@ void ArmorTracker::selectEnemy(std::vector<Armor> find_armors)
         }
     }
 */
-}
-
-void ArmorTracker::getPredictedPositionAndSpeed(clock_t start_time)
-{
-
-
-    if(tracker_state == TRACKING)
-    {
-        //时间计算（数据收发延时+弹道时间+程序运行时间）,ms
-        double delay = 0.01;
-        double fly = getFlyTime();
-        clock_t finish = clock();
-        double run = (double)(finish - start_time);
-        double all_time = delay + fly + run;
-
-        //initial F
-////        KF.setF(all_time);
-        if(isChangeSameID)
-        {
-////            KF.setP(KF.P);
-        }
-////        Eigen::VectorXd pre_position_speed = KF.update(enemy_armors.current_position);
-
-////        predicted_position<<pre_position_speed[0],pre_position_speed[1],pre_position_speed[2];
-////        predicted_speed<<pre_position_speed[3],pre_position_speed[4],pre_position_speed[5];
-
-        getAngle(predicted_position);
-
-    }
-    else
-    {
-
-        return ;
-    }
 }
 
 // 计算真实坐标
@@ -287,6 +253,52 @@ Eigen::Vector3d ArmorTracker::getRealPosition(Armor armor)
     return aimInWorld;
 }
 
+void ArmorTracker::getPredictedPositionAndSpeed(clock_t start_time)
+{
+
+
+    if(tracker_state == TRACKING)
+    {
+        //时间计算（数据收发延时+弹道时间+程序运行时间）,ms
+        double delay = 0.01;
+        double fly = getFlyTime();
+        clock_t finish = clock();
+        double run = (double)(finish - start_time);
+        double all_time = delay + fly + run;
+
+        if(isChangeSameID)
+        {
+////            KF.setP(KF.P);
+        }
+        Eigen::Vector3d imuPos = getRealPosition(enermy_armor);
+        Eigen::Matrix<double,2,1> measure(imuPos(0,0),imuPos(1,0));
+        ////////////////Singer predictor//////////////////////////////
+        Singer.PredictInit(run);
+        Singer.predict(false);
+        Singer.correct(measure);
+        Singer.PredictInit(all_time);
+        Eigen::Matrix<double,6,1> predicted_result = Singer.predict(true);
+        predicted_position << predicted_result(0,0),predicted_result(3,0),imuPos(2,0);
+        ////////////////Singer predictor//////////////////////////////
+
+        ////////////////CA predictor//////////////////////////////
+        KF.predict(run,false);
+        KF.correct(measure);
+        predicted_result = KF.predict(all_time,true);
+        predicted_position << predicted_result(0,0),predicted_result(3,0),imuPos(2,0);
+        ////////////////CA predictor//////////////////////////////
+
+        predicted_position = imu2cam(predicted_position);
+        getAngle(predicted_position);
+
+    }
+    else
+    {
+
+        return ;
+    }
+}
+
 
 headAngle ArmorTracker::finalResult(cv::Mat src, std::vector<Armor> find_armors,clock_t start_time)
 {
@@ -294,8 +306,7 @@ headAngle ArmorTracker::finalResult(cv::Mat src, std::vector<Armor> find_armors,
     selectEnemy(find_armors);
     getPredictedPositionAndSpeed(start_time);
 
-
-    //printf("-----------------%d------idid------------",enemy_armors.id);
+    //printf("-----------------%d------idid------------",enermy_armor.id);
 
     return send;
 }

@@ -41,7 +41,7 @@ public:
 private:
     cv::Mat _src;
 
-    Armor enemy_armors;
+    Armor enermy_armor;//最终选择的装甲板
 
     Skalman Singer;
 
@@ -67,7 +67,7 @@ private:
 
     Eigen::Vector3d predicted_position;  // 预测的坐标，也是要发送给电控角度的坐标计算的角度
 
-    Eigen::Vector3d predicted_speed;  // 预测得到的速度
+    Eigen::Vector3d predicted_speed;  // 预测得到的速度???
 
     double countArmorIoU(Armor armor1, Armor armor2);
 };
@@ -83,7 +83,7 @@ private:
 //                lost_aim_cnt = 0;
 //                tracking_id = 0;
 //                tracker_state = DETECTING;
-//                enemy_armors.clear();
+//                enermy_armor.clear();
 //            }
 //            return ;
 //        }

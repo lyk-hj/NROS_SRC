@@ -2,7 +2,7 @@
 #define SHSIHI_ANGLESOLVE_HPP
 
 #include "robot_status.h"
-#include "opencv2/opencv.hpp"
+#include <opencv2/opencv.hpp>
 #include <Eigen/Dense>
 #include "armor_detection.hpp"
 #include <opencv2/core/eigen.hpp>
@@ -24,9 +24,8 @@ public:
 
     void getAngle1(Armor &aimArmor);
 
-    void getAngle2(Armor aimArmor);
 
-    void getAngle(Eigen::Vector3d predicted_position);
+    void getAngle(Eigen::Vector3d position);
 
 //private:
 

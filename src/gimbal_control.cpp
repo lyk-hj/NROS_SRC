@@ -299,28 +299,17 @@ void AngleSolve::getAngle1(Armor &aimArmor)
 
 }
 
-void AngleSolve::getAngle2(Armor aimArmor)
-{
-    Vector3d cam_pos;
-    cam_pos = pnpSolve(aimArmor.armor_pt4, aimArmor.type, SOLVEPNP_IPPE);
-
-    std::cout<<"pnp pnp pnp "<<std::endl;
-    Vector3d imu_pos;
-    // imu_pos = cam2imu(cam_pos);
-
-
-}
 
 
 
 //
 void AngleSolve::getAngle(Eigen::Vector3d predicted_position)
 {
-    Vector3d world_dropPosition;
+    Vector3d cam_dropPosition;
 
-    world_dropPosition = airResistanceSolve(predicted_position);//calculate gravity and air resistance
+    cam_dropPosition = airResistanceSolve(predicted_position);//calculate gravity and air resistance in camera gimbal
 
-    yawPitchSolve(world_dropPosition);//get need yaw and pitch
+    yawPitchSolve(cam_dropPosition);//get need yaw and pitch
 
 }
 
