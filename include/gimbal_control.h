@@ -18,14 +18,7 @@ struct headAngle
 class AngleSolve : public robot_state
 {
 public:
-    explicit AngleSolve(robot_state &Robotstate);
-
-    void init(float r, float p, float y, float speed);
-
-    void getAngle1(Armor &aimArmor);
-
-
-    void getAngle(Eigen::Vector3d position);
+    explicit AngleSolve();
 
 //private:
 
@@ -51,6 +44,7 @@ public:
     Eigen::Vector3d cam2imu(Eigen::Vector3d cam_pos);
     Eigen::Vector3d imu2cam(Eigen::Vector3d imu_pos);
     Eigen::Vector2d imu2pixel(Eigen::Vector3d imu_pos);
+    Eigen::Vector3d pixel2imu(Armor &armor);
 
     Eigen::Vector3d transformPos2_World(Eigen::Vector3d &Pos);
 
@@ -66,7 +60,7 @@ public:
 
     float BulletModel(float x, float v, float angle);
 
-    double getFlyTime();
+    double getFlyTime(Eigen::Vector3d &pos);
 };
 
 }

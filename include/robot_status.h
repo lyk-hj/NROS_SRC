@@ -7,6 +7,7 @@
 #define SMALL_AIR_K 0.01903
 #define BIG_AIR_K 0.00556
 #define BIG_LIGHT_AIR_K 0.00530
+#define SHOOT_DELAY 0.2
 
 namespace robot_detection {
 
@@ -20,21 +21,19 @@ enum SpinHeading { UNKNOWN, CLOCKWISE, COUNTER_CLOCKWISE };
 class robot_state
 {
 public:
-    cv::Mat src;
-
     //电控发来的角度和弹速
     float ab_pitch;
     float ab_yaw;
     float ab_roll;
     float bullet_speed;
-    int enermy_color;
-    int enermy_type;
+    int enemy_color;
 
+    robot_state() = default;
 
-    robot_state();
-    void initSrc(cv::Mat Src_);
-    void initPose(float p, float y, float r);
-    void initSpeed(float speed);
+    void clone(robot_state &robot);
+
+    void updateData(float data[4]);
+    void updateData(float data[4], int color);
 };
 
 }

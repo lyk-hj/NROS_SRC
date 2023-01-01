@@ -1,6 +1,5 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
-#include <Eigen/Dense>
 #include "armor_detection.hpp"
 #include "Singer.hpp"
 #include "gimbal_control.h"
@@ -22,68 +21,48 @@ enum TrackerState {
 class ArmorTracker : public AngleSolve
 {
 public:
-    explicit ArmorTracker(robot_state &Robotstate);
-
-    // 返回是否找到（初始化卡尔曼）和enemy_armor
-    void selectEnemy(std::vector<Armor> find_armors);
-
-    // 计算当前的真实坐标
-    Eigen::Vector3d getRealPosition(Armor armor);
-
-    // 预测未来的真实坐标
-    void getPredictedPositionAndSpeed(clock_t start_time);
-
-    // 计算抬枪角度
-    headAngle finalResult(cv::Mat src, std::vector<Armor> find_armors,clock_t start_time);
-
-    
-
-private:
     cv::Mat _src;
 
-    Armor enermy_armor;//最终选择的装甲板
+    ArmorTracker();
+
+    void initial(std::vector<Armor> &find_armors);
+    Armor selectEnemy2(std::vector<Armor> &find_armors, double dt);
+
+    //
+    Eigen::Vector3d estimateEnemy(Armor &armor, double dt);
+
+    bool locateEnemy(std::vector<Armor> &armors, double time);
+private:
+    Armor enemy_armor;//最终选择的装甲板
 
     Skalman Singer;
 
     kal_filter KF;
 
-    int tracker_state;  // 此时跟踪器的状态
+    bool locate_target;
+    bool isChangeSameID;
 
+    int tracker_state;  // 此时跟踪器的状态
     int tracking_id;  // 跟踪的敌方ID
 
-    int lost_aim_cnt;  // 丢失目标计数
+    int find_aim_cnt;
+    int find_threshold;
 
+    int lost_aim_cnt;  // 丢失目标计数
     int lost_threshold;
 
     int change_aim_cnt;
 
-    int change_aim_threshold;
-
-    bool isChangeSameID;  // 单个目标不用切换
+    double change_aim_threshold;
 
     double new_old_threshold; // 新旧坐标的距离阈值
-
     double cur_pre_threshold; // 当前和预测的坐标点的距离阈值
 
+    double t;
+
     Eigen::Vector3d predicted_position;  // 预测的坐标，也是要发送给电控角度的坐标计算的角度
-
     Eigen::Vector3d predicted_speed;  // 预测得到的速度???
-
-    double countArmorIoU(Armor armor1, Armor armor2);
+    Eigen::Matrix<double,6,1> predicted_enemy;
 };
 
 }
-//        // 本帧的真实坐标和预测的下一帧坐标
-//        double cur_pre_distance = (predicted_position - find_armors[0].current_position).norm();
-//        if(cur_pre_distance > cur_pre_threshold)
-//        {
-//            lost_aim_cnt++;
-//            if(lost_aim_cnt > lost_threshold)
-//            {
-//                lost_aim_cnt = 0;
-//                tracking_id = 0;
-//                tracker_state = DETECTING;
-//                enermy_armor.clear();
-//            }
-//            return ;
-//        }

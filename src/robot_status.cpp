@@ -1,28 +1,34 @@
 #include "robot_status.h"
 
-namespace robot_detection {
 
-robot_state::robot_state()
+namespace robot_detection{
+
+void robot_state::updateData(float data[4],int color)
 {
-    enermy_color = BLUE;
-    enermy_type = SMALL;
+    ab_pitch = data[0];
+    ab_yaw = data[1];
+    ab_roll = data[2];
+    bullet_speed = data[3];
+    enemy_color = color;
 }
 
-void robot_state::initSrc(cv::Mat Src_)
+void robot_state::updateData(float data[4])
 {
-    src=Src_.clone();
+    ab_pitch = data[0];
+    ab_yaw = data[1];
+    ab_roll = data[2];
+    bullet_speed = data[3];
 }
 
-void robot_state::initPose(float p, float y, float r)
+void robot_state::clone(robot_state &robot)
 {
-    ab_pitch = p;
-    ab_yaw = y;
-    ab_roll = r;
+    ab_pitch = robot.ab_pitch;
+    ab_yaw = robot.ab_yaw;
+    ab_roll = robot.ab_roll;
+    bullet_speed = robot.bullet_speed;
+    enemy_color = robot.enemy_color;
 }
 
-void robot_state::initSpeed(float speed)
-{
-    bullet_speed = speed;
-}
 
 }
+

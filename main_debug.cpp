@@ -1,76 +1,49 @@
-//
-// Created by 蓬蒿浪人 on 2022/10/10.
-//
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
-#include "armor_detection.hpp"
-#include "gimbal_control.h"
-#include "armor_track.h"
+#include "ArmorDetector.hpp"
+#include "ArmorTracker.hpp"
 #include "camera.h"
-
+#include <stdlib.h>
+#include <time.h>
 using namespace cv;
-
-using namespace robot_detection;
 
 int main()
 {
-//    auto camera_warrper = new Camera;
-    robot_state robotState;
-    robotState.enermy_color = RED;
-    ArmorDetector autoShoot(robotState);
-    ArmorTracker autoTrack(robotState);
-    std::vector<Armor> autoTargets;
+    auto camera_warrper = new Camera;
+    ArmorDetector autoShoot;
+    vector<Armor> autoTarget;
+
+    ArmorTracker autoTrack;
+    headAngle sendAngle;
+    
     Mat src;
-    VideoCapture v("../sample/Record-red.avi");
-    int lost_count = 0;
-//    if (camera_warrper->init())
-//    {
+    if (camera_warrper->init())
+    {
         while(true)
         {
-            if (!v.isOpened()){
-                break;
-            }
-            v.read(src);
-            if (src.empty()){
-                break;
-            }
-            clock_t start = clock();
-//            camera_warrper->read_frame_rgb(src);
-            robot_detection::headAngle sendAngle;
-            autoTargets = autoShoot.autoAim(src);
-//            angleSolve.getAngle(autoTargets[0]);
-//            string yaw = "yaw:" + convertToString(angleSolve.send.yaw);
-//            string pitch = "pitch:" + convertToString(angleSolve.send.pitch);
-//            string angleInformation = yaw + pitch;
-//            putText(src,angleInformation,Point(0,0),FONT_HERSHEY_COMPLEX,1,Scalar(0,255,0),2);
-//            sendAngle = autoTrack.finalResult(src,autoTargets, start);
+            camera_warrper->read_frame_rgb(src);
+            clock_t start;
+            start = clock();
+            autoTarget = autoShoot.autoAim(src);
             imshow("src",src);
-            if (!autoTargets.empty())
+            if (!autoTarget.empty())
             {
-                printf("---------------main get target!!!---------------\n");
-                sort(autoTargets.begin(),autoTargets.end(),
-                     [](Armor &armor1,Armor &armor2){
-                    return armor1.grade > armor2.grade;});
-                Eigen::Vector3d pnpResult = autoTrack.pnpSolve(autoTargets[0].armor_pt4,autoTargets[0].type);
+                printf("main get target!!!\n");
             }
-            else
-            {
-                lost_count++;
-                printf("----------------no target\n---------------");
-//                waitKey(0);
-            }
+
+            sendAngle = autoTrack.finalResult(autoTarget, start);
+
             if (waitKey(10) == 27)
             {
-//                camera_warrper->~Camera();
+                camera_warrper->~Camera();
                 break;
             }
         }
-//    }
+    }
 
 
-    printf("lost_count:%d\n",lost_count);
+
 
 
     return 0;
 }
-

@@ -6,7 +6,7 @@ using namespace Eigen;
 
 namespace robot_detection{
 
-AngleSolve::AngleSolve(robot_state &Robotstate) : robot_state(Robotstate)
+AngleSolve::AngleSolve()
 {
     F_MAT=(Mat_<double>(3, 3) <<   1579.60532, 0.000000000000, 627.56545,
                         0.000000000000, 1579.86788, 508.65311,
@@ -20,18 +20,6 @@ AngleSolve::AngleSolve(robot_state &Robotstate) : robot_state(Robotstate)
 
 }
 
-void AngleSolve::init(float r, float p, float y, float speed)
-{
-//    F_MAT=(Mat_<double>(3, 3) <<   1579.60532, 0.000000000000, 627.56545,
-//            0.000000000000, 1579.86788, 508.65311,
-//            0.000000000000, 0.000000000000, 1.000000000000);
-//    C_MAT=(Mat_<double>(1, 5) << -0.09082  , 0.22923  , -0.00020  , 0.00013 , 0.00000);
-//
-//    big_w = 225.;
-//    big_h = 57.;
-//    small_w = 135.;
-//    small_h = 57.;
-}
 Eigen::Matrix3d eulerAnglesToRotationMatrix(Eigen::Vector3d &theta)
 {
     Eigen::Matrix3d R_x;    // 计算旋转矩阵的X分量
@@ -102,7 +90,8 @@ Eigen::Vector3d AngleSolve::cam2imu(Vector3d cam_pos)
 
     pos_tmp = {cam_pos[2],-cam_pos[0],-cam_pos[1]};
     std::cout<<"tmp_pos: "<<pos_tmp<<std::endl;
-    
+
+    //
     Vector3d euler_imu = {(double)ab_roll/180*CV_PI,(double)ab_pitch/180*CV_PI,(double)ab_yaw/180*CV_PI};  // xyz-rpy
     Matrix3d imu_r = eulerAnglesToRotationMatrix2(euler_imu);
     std::cout<<"imu_r"<<imu_r<<std::endl;
@@ -265,52 +254,18 @@ void AngleSolve::yawPitchSolve(Vector3d &Pos)
                        sqrt(Pos(0,0)*Pos(0,0) + Pos(1,0)*Pos(1,0))) / CV_PI*180.0 - ab_pitch;
 }
 
-double AngleSolve::getFlyTime()
+double AngleSolve::getFlyTime(Eigen::Vector3d &pos)
 {
-
+    fly_time = pos.norm() / bullet_speed;
     return fly_time * 1000;
 }
 
-void AngleSolve::getAngle1(Armor &aimArmor)
+
+Eigen::Vector3d AngleSolve::pixel2imu(Armor &armor)
 {
-
-    ////sample////
-    Vector3d po;
-    po << 1,0,0;
-    /////////////
-    Vector3d aimPosition,worldPosition,world_dropPosition,camera_dropPosition;
-    aimPosition = pnpSolve(aimArmor.armor_pt4, aimArmor.type, SOLVEPNP_IPPE);//use PnP to get aim position
-
-    worldPosition = transformPos2_World(aimPosition);//transform aim position to world coordinate system
-
-    //world_dropPosition = gravitySolve(worldPosition);//calculate gravity
-
-    world_dropPosition = airResistanceSolve(worldPosition);//calculate gravity and air resistance
-
-    camera_dropPosition = transformPos2_Camera(world_dropPosition);//transform position to camera coordinate system to get angle
-
-    yawPitchSolve(camera_dropPosition);//get need yaw and pitch
-
-    ////output result/////
-    std::cout<<worldPosition[0]<<std::endl;
-    std::cout<<worldPosition[1]<<std::endl;
-    std::cout<<worldPosition[2]<<std::endl;
-    /////////////////////
-
-}
-
-
-
-
-//
-void AngleSolve::getAngle(Eigen::Vector3d predicted_position)
-{
-    Vector3d cam_dropPosition;
-
-    cam_dropPosition = airResistanceSolve(predicted_position);//calculate gravity and air resistance in camera gimbal
-
-    yawPitchSolve(cam_dropPosition);//get need yaw and pitch
-
+    armor.camera_position = pnpSolve(armor.armor_pt4,armor.type);
+    Eigen::Vector3d imu_pos = cam2imu(armor.camera_position);
+    return imu_pos;
 }
 
 }

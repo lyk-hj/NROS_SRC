@@ -14,7 +14,7 @@ include_directories(${OpenCV_INCLUDE_DIRS}
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
 
-add_executable(run main_debug.cpp)
+add_executable(run main_record.cpp)
 
 target_link_libraries(run SRCSO ${OpenCV_LIBS} ${CAM_LIB})
 

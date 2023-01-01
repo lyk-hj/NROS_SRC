@@ -14,13 +14,13 @@ using namespace std;
 
 namespace robot_detection {
 
-ArmorDetector::ArmorDetector(robot_state &Robotstate) : robot_state(Robotstate)
+ArmorDetector::ArmorDetector()
 {
     cnt=0;
 
     //binary_thresh
-    if (enermy_color == RED)
-        binThresh = 50;
+    if (enemy_color == RED)
+        binThresh = 48;
     else
         binThresh = 90;
 
@@ -165,7 +165,7 @@ void ArmorDetector::findLights()
 
                 // 颜色不符合电控发的就不放入
 
-                if(light.lightColor == enermy_color)
+                if(light.lightColor == enemy_color)
                 {
                     candidateLights.emplace_back(light);
 #ifdef DRAW_LIGHTS_RRT
