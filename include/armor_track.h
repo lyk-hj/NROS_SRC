@@ -21,21 +21,23 @@ enum TrackerState {
 class ArmorTracker : public AngleSolve
 {
 public:
+    Skalman Singer;
+
     cv::Mat _src;
 
     ArmorTracker();
 
-    void initial(std::vector<Armor> &find_armors);
-    Armor selectEnemy2(std::vector<Armor> &find_armors, double dt);
+    void reset();
+
+    bool initial(std::vector<Armor> &find_armors);
+
+    bool selectEnemy2(std::vector<Armor> &find_armors, double dt);
 
     //
-    Eigen::Vector3d estimateEnemy(Armor &armor, double dt);
-
+    bool estimateEnemy(double dt);
     bool locateEnemy(std::vector<Armor> &armors, double time);
 private:
     Armor enemy_armor;//最终选择的装甲板
-
-    Skalman Singer;
 
     kal_filter KF;
 
@@ -63,6 +65,7 @@ private:
     Eigen::Vector3d predicted_position;  // 预测的坐标，也是要发送给电控角度的坐标计算的角度
     Eigen::Vector3d predicted_speed;  // 预测得到的速度???
     Eigen::Matrix<double,6,1> predicted_enemy;
+    Eigen::Vector3d bullet_point;
 };
 
 }

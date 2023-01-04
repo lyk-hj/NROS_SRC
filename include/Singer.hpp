@@ -29,6 +29,7 @@ public:
     double T = 0;//采样周期T，即前后两次预测帧相隔的时间
 
     Skalman();
+    void Reset();
     void PredictInit(double deleta_t);
     Eigen::Matrix<double,6,1> predict(bool predict)
     {

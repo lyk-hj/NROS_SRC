@@ -176,13 +176,13 @@ void ArmorDetector::findLights()
                         line(light_show, vertice_lights[i], vertice_lights[(i + 1) % 4], CV_RGB(255, 0, 0),2,LINE_8);
                     }
                     //circle(_src,light.center,5,Scalar(0,0,0),-1);
-                    
+//                    imshow("lights-show-_src", light_show);
+
 #endif //DRAW_LIGHTS_RRT
                 }
             }
         }
     }
-    imshow("lights-show-_src", light_show);
 //cout<<"dengtiao  geshu:  "<<candidateLights.size()<<endl;
 }
 
@@ -447,7 +447,7 @@ void ArmorDetector::detectNum(Armor& armor)
         threshold(numDst, numDst, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
 //        printf("%d",armor.id);
         imshow("number_show",numDst);
-        std::cout<<"number:   "<<armor.id<<"   type:   "<<armor.type<<std::endl;
+//        std::cout<<"number:   "<<armor.id<<"   type:   "<<armor.type<<std::endl;
     }
 #endif
 }
@@ -508,7 +508,7 @@ int ArmorDetector::armorGrade(const Armor& checkArmor)
                       height_grade  * height_grade_ratio +
                       near_grade  * near_grade_ratio;
 
-    std::cout<<id_grade<<"   "<<height_grade<<"   "<<near_grade<<"    "<<final_grade<<std::endl;
+//    std::cout<<id_grade<<"   "<<height_grade<<"   "<<near_grade<<"    "<<final_grade<<std::endl;
 
     return final_grade;
 }

@@ -34,6 +34,8 @@ public:
     Eigen::Matrix<double,1,5> C_EGN;
     Eigen::Matrix<double,3,3> rotated_matrix;
     Eigen::Matrix<double,3,3> coordinate_matrix;
+    Eigen::Matrix3d cam2imu_r;
+    Eigen::Matrix3d imu_r;
 
     cv::Mat F_MAT;
     cv::Mat C_MAT;
@@ -41,24 +43,20 @@ public:
 
     headAngle send;
 
-    Eigen::Vector3d cam2imu(Eigen::Vector3d cam_pos);
-    Eigen::Vector3d imu2cam(Eigen::Vector3d imu_pos);
-    Eigen::Vector2d imu2pixel(Eigen::Vector3d imu_pos);
+    Eigen::Vector3d cam2imu(Eigen::Vector3d &cam_pos);
+    Eigen::Vector3d imu2cam(Eigen::Vector3d &imu_pos);
     Eigen::Vector3d pixel2imu(Armor &armor);
-
-    Eigen::Vector3d transformPos2_World(Eigen::Vector3d &Pos);
-
-    Eigen::Vector3d transformPos2_Camera(Eigen::Vector3d &Pos);
+    cv::Point imu2pixel(Eigen::Vector3d &imu_pos);
 
     Eigen::Vector3d pnpSolve(const cv::Point2f p[4], int type, int method = cv::SOLVEPNP_IPPE);
 
     Eigen::Vector3d gravitySolve(Eigen::Vector3d &Pos);//just consider gravity no air resistance consider
 
-    Eigen::Vector3d airResistanceSolve(Eigen::Vector3d &Pos);//consider gravity asn air resistance
+    Eigen::Vector3d airResistanceSolve(Eigen::Vector3d &imu_Pos);//consider gravity asn air resistance
 
     void yawPitchSolve(Eigen::Vector3d &Pos);
 
-    float BulletModel(float x, float v, float angle);
+    double BulletModel(double &x, float &v, double &angle);
 
     double getFlyTime(Eigen::Vector3d &pos);
 };

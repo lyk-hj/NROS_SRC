@@ -7,7 +7,7 @@
 #define SMALL_AIR_K 0.01903
 #define BIG_AIR_K 0.00556
 #define BIG_LIGHT_AIR_K 0.00530
-#define SHOOT_DELAY 0.2
+#define SHOOT_DELAY 0.1
 
 namespace robot_detection {
 

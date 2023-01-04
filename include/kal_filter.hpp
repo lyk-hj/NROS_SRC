@@ -19,46 +19,51 @@ public:
 	kal_filter()
 	{
 		H << 1, 0, 0, 0, 0, 0,
-				0, 0, 1, 0, 0, 0,
-				0, 0, 0, 0, 1, 0;
+				0, 1, 0, 0, 0, 0,
+				0, 0, 1, 0, 0, 0;
 		R << 1, 0, 0,
 				0, 1, 0,
 				0, 0, 1;
-		Q << 15, 0, 0, 0, 0, 0,
-				0, 4, 0, 0, 0, 0,
-				0, 0, 15, 0, 0, 0,
+		Q << 10, 0, 0, 0, 0, 0,
+				0, 10, 0, 0, 0, 0,
+				0, 0, 10, 0, 0, 0,
 				0, 0, 0, 4, 0, 0,
-				0, 0, 0, 0, 15, 0,
+				0, 0, 0, 0, 4, 0,
 				0, 0, 0, 0, 0, 4;
 		sigma = Q;
-		Xk_1 << 0, 0.001, 0, 0.001, 0, 0.001;
+		Xk_1 << 0, 0, 0, 0.001, 0.001, 0.001;
 	}
 	void reset()
 	{
 	    H << 1, 0, 0, 0, 0, 0,
-	        0, 0, 1, 0, 0, 0,
-	        0, 0, 0, 0, 1, 0;
+            0, 1, 0, 0, 0, 0,
+            0, 0, 1, 0, 0, 0;
 	    R << 1, 0, 0,
-	        0, 1, 0,
-	        0, 0, 1;
-	    Q << 15, 0, 0, 0, 0, 0,
-	        0, 4, 0, 0, 0, 0,
-	        0, 0, 15, 0, 0, 0,
+            0, 1, 0,
+            0, 0, 1;
+	    Q << 10, 0, 0, 0, 0, 0,
+            0, 10, 0, 0, 0, 0,
+            0, 0, 10, 0, 0, 0,
             0, 0, 0, 4, 0, 0,
-            0, 0, 0, 0, 15, 0,
+            0, 0, 0, 0, 4, 0,
             0, 0, 0, 0, 0, 4;
 	    sigma = Q;
-	    Xk_1 << 0, 0.001, 0, 0.001, 0, 0.001;
+	    Xk_1 << 0, 0, 0, 0.001, 0.001, 0.001;
 	}
 
-	void setPosAndSpeed(Eigen::Vector3d &position, Eigen::Vector3d &speed)
+	void setPosAndSpeed(Eigen::Vector3d &position, const Eigen::Vector3d speed)
 	{
-	    Xk_1 << position[0], speed[0], position[1], speed[1], position[2], speed[2];
+	    Xk_1 << position,speed;
 	}
 
 	void setPosAndSpeed(Eigen::Matrix<double,6,1> &position)
 	{
 	    Xk_1 << position;
+	}
+
+	void setXPost(Eigen::Vector3d &position)
+	{
+	    Xk_1 << position,Xk_1.tail(3);
 	}
 	
 
@@ -66,12 +71,12 @@ public:
 	Eigen::Matrix<double, 6, 1> predict(double delata_t , bool predict)
 	{
 		dt = delata_t;
-		F << 1, dt, 0, 0, 0, 0,
-				0, 1, 0, 0, 0, 0,
-				0, 0, 1, dt, 0, 0,
-				0, 0, 0, 1, 0, 0,
-				0, 0, 0, 0, 1, dt,
-				0, 0, 0, 0, 0, 1;
+		F << 1, 0, 0, dt, 0, 0,
+            0, 1, 0, 0, dt, 0,
+            0, 0, 1, 0, 0, dt,
+            0, 0, 0, 1, 0, 0,
+            0, 0, 0, 0, 1, 0,
+            0, 0, 0, 0, 0, 1;
 		if (!predict)
 		{
 			Xk = F * Xk_1;
