@@ -1,23 +1,55 @@
-cmake_minimum_required(VERSION 3.20)
-project(run)
+cmake_minimum_required(VERSION 3.5)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CAM_LIB ${PROJECT_SOURCE_DIR}/lib/MVCAMSDK.lib)
-set(CAM_LIB64 ${PROJECT_SOURCE_DIR}/lib/MVCAMSDK_X64.lib)
+project(demo)
 
+SET(BIN_NAME "run")
+#SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -pthread")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+#set(THREADS_PREFER_PTHREAD_FLAG ON)
+set(OpenCV_DIR /home/lmx/Opencv454/opencv-4.5.4/build)
 
-find_package(OpenCV 4.5 REQUIRED)
+find_package(OpenCV 4 REQUIRED)
 find_package(Eigen3 REQUIRED)
+#find_package(Threads REQUIRED)
+find_package(X11 REQUIRED)
 
-include_directories(${OpenCV_INCLUDE_DIRS}
-                    ${EIGEN3_INCLUDE_DIRS}
-                    ${PROJECT_SOURCE_DIR}/include)
+#find_package(Threads)
 
+message(STATUS "OpenCV library status:")
+message(STATUS "    version: ${OpenCV_VERSION}")
+#message(STATUS "    libraries: ${OpenCV_DIR}")
+message(STATUS "    include path: ${OpenCV_INCLUDE_DIRS}")
 
-aux_source_directory(${PROJECT_SOURCE_DIR}/src DIR_SRC)
+message(STATUS "Eigen3 library status:")
+message(STATUS "    version: ${Eigen3_VERSION}")
+#message(STATUS "    libraries: ${Eigen3_DIR}")
+message(STATUS "    include path: ${EIGEN3_INCLUDE_DIRS}")
 
-add_executable(run main_debug.cpp)
+message(STATUS "    include path11: ${Threads_INCLUDE_DIRS}")
 
-target_link_libraries(run SRCSO ${OpenCV_LIBS} ${CAM_LIB} ${CAM_LIB64})
+include_directories(${OpenCV_INCLUDE_DIRS})
+include_directories(${EIGEN3_INCLUDE_DIRS})
+include_directories(${PROJECT_SOURCE_DIR}/include)
+include_directories(${PROJECT_SOURCE_DIR}/include/camera)
+#include_directories(${Threads_INCLUDE_DIRS})
 
-add_library(SRCSO ${DIR_SRC})
+file(GLOB_RECURSE sourcefiles "src/*.cpp")
+
+#add_compile_options(-Wall -lX11)
+
+ADD_EXECUTABLE(${BIN_NAME} main.cpp ${sourcefiles} ${X11_INCLUDE_DIR})
+add_definitions(-std=c++11)
+
+target_link_libraries(${BIN_NAME} ${X11_LIBRARIES})
+
+#target_link_libraries(${BIN_NAME} Threads::Threads)
+
+target_link_libraries(${BIN_NAME} ${OpenCV_LIBS})
+#TARGET_LINK_LIBRARIES(${BIN_NAME} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(${BIN_NAME} /lib/libMVSDK.so)
+#target_link_libraries(${BIN_NAME} yaml-cpp)
+#target_link_libraries(${BIN_NAME} ${EIGEN3_LIBS})
+#target_link_libraries( snack Common -lpthread -lm)
+
+#ADD_CUSTOM_command(TARGET ${BIN_NAME} COMMAND "${PROJECT_SOURCE_DIR}/tools/create-startup.sh" "${PROJECT_SOURCE_DIR}" "${PROJECT_SOURCE_DIR}/tools")
+
