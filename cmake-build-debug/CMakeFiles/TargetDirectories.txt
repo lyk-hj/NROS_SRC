@@ -1,0 +1,3 @@
+/home/lmx/real/cmake-build-debug/CMakeFiles/run.dir
+/home/lmx/real/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/lmx/real/cmake-build-debug/CMakeFiles/rebuild_cache.dir

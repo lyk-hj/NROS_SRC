@@ -1,107 +1,120 @@
+#include <iostream>
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
 #include "armor_detection.hpp"
+#include "gimbal_control.h"
 #include "armor_track.h"
 #include "camera.h"
-#include <stdlib.h>
-#include <time.h>
-using namespace cv;
-using namespace robot_detection;
 
-#define COLOR RED
+using namespace std;
+using namespace cv;
 
 int main()
 {
-    auto camera_warper = new Camera;
+    auto start = chrono::steady_clock::now();
+//    auto camera_warrper = new Camera;
     double time = -1;
-    float data[4] = {0,0,0,28};
+    float a[4] = {0,0,0,28};
     robot_state robot;
-    robot.updateData(data,COLOR);
-    ArmorDetector autoShoot;
-    autoShoot.clone(robot);
-    ArmorTracker autoTrack;
-    autoTrack.AS.clone(robot);
+
+    ArmorDetector Detect;
+
+    ArmorTracker Track;
+
     Skalman Singer;
-    std::vector<Armor> autoTargets;
+    std::vector<Armor> Targets;
     Eigen::Vector3d predicted_position;
     Mat src;
+    VideoCapture v("/home/lmx/debug.avi");
     int lost_count = 0;
-    if (camera_warper->init())
+//    if (camera_warrper->init())
+//    {
+    while(true)
     {
-        while(true)
-        {
-            if(camera_warper->read_frame_rgb())
-            {
-                //            	std::cout<<"init success"<<std::endl;
-                src = camera_warper->src.clone();
-                camera_warper->release_data();
-            }
-
-            autoTargets = autoShoot.autoAim(src);
-            if (!autoTargets.empty())
-            {
-                printf("---------------main get target!!!---------------\n");
-                double now_time = (double)getTickCount();
-                src.copyTo(autoTrack.AS._src);
-                if(autoTrack.locateEnemy(autoTargets,now_time))
-                {
-                    //todo:show state
-                    std::cout<<"track!!!"<<autoTrack.tracker_state<<"  id: "<<autoTrack.tracking_id<<std::endl;
-                }
-                else
-                {
-                    std::cout<<"loss!!!"<<std::endl;
-                }
-//                sort(autoTargets.begin(),autoTargets.end(),
-//                     [](Armor &armor1,Armor &armor2){
-//                    return armor1.grade > armor2.grade;});
-//                double now_time = (double)getTickCount();
-//                if(time == -1)
-//                {
-//                    time = now_time;
-//                    continue;
-//                }
-//                double dt = (now_time - time) / (double)getTickFrequency();
-//                time = now_time;
-//                Eigen::Vector3d imuPos = autoTrack.pixel2imu(autoTargets[0]);
-//                circle(src,autoTargets[0].center,10,Scalar(255,0,0),-1);
-//                //                std::cout<<"imuPos:"<<imuPos<<std::endl;
-//                //                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(imuPos);
-//                //                std::cout<<"airPos:"<<airPos<<std::endl;
-//                Eigen::Matrix<double,2,1> measure(imuPos(0,0),imuPos(1,0));
-//                std::cout<<measure<<std::endl;
-//                double all_time = SHOOT_DELAY + autoTrack.getFlyTime(imuPos);
-//                ////////////////Singer predictor//////////////////////////////
-//                Singer.PredictInit(dt);
-//                //                std::cout<<"dt:"<<dt<<std::endl;
-//                std::cout<<"predict_front:"<<Singer.predict(false)<<std::endl;
-//                std::cout<<"correct:"<<Singer.correct(measure)<<std::endl;
-//                Singer.PredictInit(all_time);
-//                Eigen::Matrix<double,6,1> predicted_result = Singer.predict(true);
-//                std::cout<<"result:"<<predicted_result<<std::endl;
-//                predicted_position << predicted_result(0,0),predicted_result(3,0),imuPos(2,0);
-//                //                std::cout<<"predict_pos:"<<predicted_position<<std::endl;
-//                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(predicted_position);
-//                cv::Point pixelPos = autoTrack.imu2pixel(airPos);
-//                ////////////////Singer predictor//////////////////////////////
-//                //                cv::Point pixelPos = autoTrack.imu2pixel(airPos);
-//                //                std::cout<<pixelPos<<std::endl;
-//                circle(src,pixelPos,10,Scalar(0,0,255),-1);
-            }
-            else
-            {
-                autoTrack.Singer.Reset();
-                lost_count++;
-                printf("----------------no target\n---------------");
-            }
-            imshow("src",src);
-            if (waitKey(1) == 27)
-            {
-                camera_warper->~Camera();
-                break;
-            }
+        if (!v.isOpened()){
+            break;
         }
+        v.read(src);
+        if (src.empty()){
+            break;
+        }
+
+        // chrono
+        auto end = chrono::steady_clock::now();    //结束时间
+        double duration = std::chrono::duration<double>(end - start).count();
+
+
+        // detecting
+        auto start2 = chrono::steady_clock::now();
+        Targets = Detect.autoAim(src);
+        auto end2 = chrono::steady_clock::now();    //结束时间
+        double duration2 = std::chrono::duration<double>(end2 - start2).count();
+        cout<<"detect_time:  "<<duration2<<endl;
+
+        if (!Targets.empty())
+        {
+            std::cout<<"main get ---"<<Targets.size()<<"--- target!!!"<<std::endl;
+            // std::cout<<"aim_pixel: "<<Targets[0].center<<std::endl;
+//                    AS.init(gimbal_roll,gimbal_pitch,gimbal_yaw,28);
+//                    Eigen::Vector3d cam_pos = AS.pnpSolve(Targets[0].armor_pt4,1,cv::SOLVEPNP_IPPE);
+//                    // std::cout<<"cam_pos: "<<cam_pos<<std::endl;
+//                    Eigen::Vector3d imu_pos = AS.cam2imu(cam_pos);
+//                    std::cout<<"imu_pos: "<<imu_pos<<std::endl;
+//                    // std::cout<<"imu_distance: "<<imu_pos.norm()<<std::endl;
+//                    Eigen::Vector3d cam_pos2 = AS.imu2cam(imu_pos);
+//                    // std::cout<<"cam_pos2: "<<cam_pos<<std::endl;
+//                    Eigen::Vector2d pixel_pos = AS.imu2pixel(imu_pos);
+//                    // std::cout<<"pixel_pos: "<<pixel_pos<<std::endl;
+//                    circle(src,cv::Point2f(pixel_pos[0],pixel_pos[1]),10,cv::Scalar(0,255,255),-1);
+
+            // AS.init(gimbal_roll, gimbal_pitch, gimbal_yaw, 28.0);
+            // AS.getAngle2(Targets[0]);
+        }
+        else
+        {
+            std::cout<<"no target!!!"<<std::endl;
+        }
+
+        float dt = duration;  // 状态转移矩阵的dt2
+        std::cout<<"fps: "<<1/dt<<std::endl;
+        float a[4] = {0,0,0,28};
+
+        double now_time = (double)getTickCount();
+//                auto start3 = chrono::steady_clock::now();
+        bool track_bool = Track.locateEnemy(src,Targets,a,dt,now_time);
+//                auto end3 = chrono::steady_clock::now();    //结束时间
+//                double duration3 = std::chrono::duration<double>(end3 - start3).count();
+//                cout<<"track_time(ms):  "<<duration3*1000<<endl;
+
+        if(track_bool)
+        {
+            std::cout<<"track!!!"<<Track.tracker_state<<"  id: "<<Track.tracking_id<<std::endl;
+        }
+        else
+        {
+            std::cout<<"loss!!!"<<std::endl;
+        }
+
+        cv::putText(src,"FPS: "+std::to_string(1/duration),cv::Point2f(0,30),cv::FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(255, 255, 0),1,3);
+        imshow("src", src);
+
+//                auto start5 = chrono::steady_clock::now();
+        cv::waitKey(1);  // 6ms
+//                auto end5 = chrono::steady_clock::now();
+//                double duration_second = std::chrono::duration<double>(end5 - start5).count();
+//                cout<<"gyhjklm"<<duration_second<<endl;
+
+        // end
+        start = end;
+//            break;
+
     }
+//    }
+
+
     printf("lost_count:%d\n",lost_count);
+
+
     return 0;
 }
+

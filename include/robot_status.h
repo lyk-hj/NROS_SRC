@@ -7,15 +7,14 @@
 #define SMALL_AIR_K 0.01903
 #define BIG_AIR_K 0.00556
 #define BIG_LIGHT_AIR_K 0.00530
-#define SHOOT_DELAY 0.07
 
-namespace robot_detection {
+//namespace robot_detection {
 
 //robot basic classes
-enum EnermyColor { RED = 1, BLUE = 2 };
-enum EnermyType  { SMALL = 1, BIG = 2 };
-enum EnermyState { RUN = 1, SPIN = 2};
-enum SpinHeading { UNKNOWN, CLOCKWISE, COUNTER_CLOCKWISE };
+    enum EnermyColor { RED = 1, BLUE = 2 };
+    enum EnermyType  { SMALL = 1, BIG = 2 };
+    enum EnermyState { RUN = 1, SPIN = 2};
+    enum SpinHeading { UNKNOWN, CLOCKWISE, COUNTER_CLOCKWISE };
 
 //robot state information from electronic control group
 class robot_state
@@ -36,4 +35,4 @@ public:
     void updateData(float data[4], int color);
 };
 
-}
+//}
