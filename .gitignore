@@ -16,7 +16,10 @@
 CMakeLists.txt
 
 #ignore huge file such as record and so on
-/material
+/sample
 
 #ignore record file
 *.avi
+
+#ignore build file
+/build

@@ -6,12 +6,11 @@
 class Camera
 {
 public:
+    cv::Mat src;
     Camera() = default;
 
     bool init();
     bool read_frame_rgb();
-    bool read_frame_raw();
-    //	bool transform_src_data(cv::Mat &src);
     bool release_data();
     bool camera_record();
     bool record_start();
@@ -20,7 +19,6 @@ public:
 
 
     int record_state = RECORD_STOP;//用来记录录像状态
-    IplImage* ipiimage = nullptr;    //储存在缓存区地原始图像数据
 
 private:
 

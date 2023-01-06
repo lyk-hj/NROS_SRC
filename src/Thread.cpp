@@ -160,7 +160,7 @@
 //
 //		is_ka = false;
 //
-//		ka_src.copyTo(Track._src);
+//		ka_src.copyTo(Track._src);//Tracker _src has gotten data in thread
 //        Track.updateData(send_data.data);
 //		angle_get = send_data.dat_is_get;
 //		mode_temp = send_data.mode;

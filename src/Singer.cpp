@@ -8,12 +8,15 @@ Skalman::Skalman()
          0,0,0,1,0,0;
 
     //init R
-    R << 0.5, 0,
-         0, 0.5;
+    R << 0.005, 0,
+         0, 0.005;
 
     //init Xk_1
-    Xk_1 << 0,0.001,0.01,
-            0,0.001,0.01;
+    Xk_1 << 0,0.1,0,
+            0,0.1,0;
+
+    //init Xk
+//    Xk = Xk_1;
 
     //init P
     double r11 = R(0,0);
@@ -43,17 +46,12 @@ Skalman::Skalman()
 
 void Skalman::Reset()
 {
-    //init H
-    H << 1,0,0,0,0,0,
-    0,0,0,1,0,0;
-
-    //init R
-    R << 0.001, 0,
-    0, 0.001;
-
     //init Xk_1
-    Xk_1 << 0,0.001,0.01,
-            0,0.001,0.01;
+    Xk_1 << 0,0.1,0,
+            0,0.1,0;
+
+    //init Xk
+//    Xk = Xk_1;
 
     //init P
     double r11 = R(0,0);
@@ -72,6 +70,41 @@ void Skalman::Reset()
 
     //init Zk
     Zk << 0.1,0.1;
+}
+
+
+void Skalman::Reset(Eigen::Vector2d Xpos)
+{
+    //init Xk_1
+    Xk_1 << Xpos(0,0),0.1,0,
+            Xpos(1,0),0.1,0;
+
+    //init Xk
+//    Xk = Xk_1;
+
+    //init P
+    double r11 = R(0,0);
+    double r22 = R(1,1);
+    Eigen::Matrix<double,3,3> p11,p22;
+    p11 <<r11, r11/initT, r11/(initT*initT),
+    r11/initT, (2*r11)/(initT*initT), (3*r11)/pow(initT,3),
+    r11/(initT*initT), (3*r11)/pow(initT,3), (4*r11)/pow(initT,4);
+
+    p22<<r22, r22/initT, r22/(initT*initT),
+    r22/initT, (2*r22)/(initT*initT), (3*r22)/pow(initT,3),
+    r22/(initT*initT), (3*r22)/pow(initT,3), (4*r22)/pow(initT,4);
+
+    P<<p11,Eigen::Matrix<double,3,3>::Zero(),
+    Eigen::Matrix<double,3,3>::Zero(),p22;
+
+    //init Zk
+    Zk << 0.1,0.1;
+}
+
+void Skalman::setXpos(Eigen::Vector2d Xpos)
+{
+    Xk_1 << Xpos(0,0),0.1,0,
+            Xpos(1,0),0.1,0;
 }
 
 void Skalman::PredictInit(double deleta_t)

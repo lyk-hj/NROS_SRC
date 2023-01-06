@@ -18,12 +18,15 @@ enum TrackerState {
 
 
 
-class ArmorTracker : public AngleSolve
+class ArmorTracker
 {
 public:
+    int tracker_state;  // 此时跟踪器的状态
+    int tracking_id;  // 跟踪的敌方ID
+
     Skalman Singer;
 
-    cv::Mat _src;
+    AngleSolve AS;
 
     ArmorTracker();
 
@@ -32,20 +35,18 @@ public:
     bool initial(std::vector<Armor> &find_armors);
 
     bool selectEnemy2(std::vector<Armor> &find_armors, double dt);
-
     //
     bool estimateEnemy(double dt);
     bool locateEnemy(std::vector<Armor> &armors, double time);
 private:
+
     Armor enemy_armor;//最终选择的装甲板
 
     kal_filter KF;
 
     bool locate_target;
-    bool isChangeSameID;
 
-    int tracker_state;  // 此时跟踪器的状态
-    int tracking_id;  // 跟踪的敌方ID
+    bool isChangeSameID;
 
     int find_aim_cnt;
     int find_threshold;
@@ -53,12 +54,7 @@ private:
     int lost_aim_cnt;  // 丢失目标计数
     int lost_threshold;
 
-    int change_aim_cnt;
-
-    double change_aim_threshold;
-
     double new_old_threshold; // 新旧坐标的距离阈值
-    double cur_pre_threshold; // 当前和预测的坐标点的距离阈值
 
     double t;
 

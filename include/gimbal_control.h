@@ -39,6 +39,7 @@ public:
 
     cv::Mat F_MAT;
     cv::Mat C_MAT;
+    cv::Mat _src;
 
 
     headAngle send;
@@ -46,7 +47,8 @@ public:
     Eigen::Vector3d cam2imu(Eigen::Vector3d &cam_pos);
     Eigen::Vector3d imu2cam(Eigen::Vector3d &imu_pos);
     Eigen::Vector3d pixel2imu(Armor &armor);
-    cv::Point imu2pixel(Eigen::Vector3d &imu_pos);
+    cv::Point2f imu2pixel(Eigen::Vector3d &imu_pos);
+    cv::Point2f cam2pixel(Eigen::Vector3d &cam_pos);
 
     Eigen::Vector3d pnpSolve(const cv::Point2f p[4], int type, int method = cv::SOLVEPNP_IPPE);
 

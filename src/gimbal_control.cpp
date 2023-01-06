@@ -1,5 +1,6 @@
 #include "gimbal_control.h"
 
+#define SHOW_MEASURE_RRECT
 
 using namespace cv;
 using namespace Eigen;
@@ -101,28 +102,17 @@ Eigen::Vector3d AngleSolve::imu2cam(Vector3d &imu_pos)
     return cam_pos;
 }
 
-Point AngleSolve::imu2pixel(Vector3d &imu_pos)
+Point2f AngleSolve::imu2pixel(Vector3d &imu_pos)
 {
-//    Vector3d euler_imu = {(double)ab_roll,(double)ab_pitch,(double)ab_yaw};  // xyz-rpy
-//    imu_r = eulerAnglesToRotationMatrix2(euler_imu);
-//
-//    Vector3d tmp_pos;
-//    tmp_pos = imu_r * imu_pos;
-//
-//    double r=-90/180*CV_PI;
-//    double p=0/180*CV_PI;
-//    double y=-90/180*CV_PI;
-////    double x_offset,y_offset,z_offset;
-////    Vector3d imu_t = {x_offset,y_offset,z_offset};
-//    Vector3d euler_cam2imu = {r,p,y};  // xyz-rpy
-//    Matrix3d cam2imu_r = eulerAnglesToRotationMatrix(euler_cam2imu);
-//    Vector3d cam_pos;
-//    cam_pos = cam2imu_r.inverse() * tmp_pos;
-//
-//    // std::cout<<"cam_pos_in_fuc_imu2pixel: "<<cam_pos<<std::endl;
-
     Vector3d cam_pos = imu2cam(imu_pos);
 
+    Point pixel_pos = cam2pixel(cam_pos);
+
+    return pixel_pos;
+}
+
+Point2f AngleSolve::cam2pixel(Eigen::Vector3d &cam_pos)
+{
     Vector3d tmp_pixel;
     Matrix3d F_vec;
     cv2eigen(F_MAT,F_vec);
@@ -191,10 +181,10 @@ Eigen::Vector3d AngleSolve::pnpSolve(const Point2f p[4], int type, int method)
 
 
     std::vector<cv::Point2f> pu;
-    pu.push_back(p[2]);
     pu.push_back(p[3]);
-    pu.push_back(p[0]);
+    pu.push_back(p[2]);
     pu.push_back(p[1]);
+    pu.push_back(p[0]);
 
     cv::Mat rvec;
     cv::Mat tvec;
@@ -203,6 +193,45 @@ Eigen::Vector3d AngleSolve::pnpSolve(const Point2f p[4], int type, int method)
     cv::solvePnP(ps, pu, F_MAT, C_MAT, rvec, tvec);
     cv::cv2eigen(tvec, tv);
 
+#ifdef SHOW_MEASURE_RRECT
+    Mat rv_mat;
+    Eigen::Matrix<double,3,3> rv;
+    cv::Rodrigues(rvec,rv_mat);
+    cv::cv2eigen(rv_mat,rv);
+//    std::cout<<"rv"<<rv<<std::endl;
+
+    Eigen::Vector3d imuPoint = {-w / 2 , -h / 2, 0.};
+    Eigen::Vector3d armorPoint = rv*imuPoint + tv;//in camera coordinate
+    cv::Point2f m_lu,m_ld,m_ru,m_rd;
+    m_lu = cam2pixel(armorPoint);
+
+    imuPoint = {-w / 2 , h / 2, 0.};
+    armorPoint = rv*imuPoint + tv;
+    m_ld = cam2pixel(armorPoint);
+
+    imuPoint = {w / 2 , -h / 2, 0.};
+    armorPoint = rv*imuPoint + tv;
+    m_ru = cam2pixel(armorPoint);
+
+    imuPoint = {w / 2 , h / 2, 0.};
+    armorPoint = rv*imuPoint + tv;
+    m_rd = cam2pixel(armorPoint);
+
+    circle(_src,m_lu,3,Scalar(0,255,0),-1);
+    circle(_src,m_ld,3,Scalar(255,255,0),-1);
+    circle(_src,m_ru,3,Scalar(0,0,255),-1);
+    circle(_src,m_rd,3,Scalar(0,255,255),-1);
+    line(_src,m_lu,m_ld,Scalar(0,0,0),2);
+    line(_src,m_ld,m_rd,Scalar(255,0,0),2);
+    line(_src,m_rd,m_ru,Scalar(255,0,255),2);
+    line(_src,m_ru,m_lu,Scalar(255,255,0),2);
+//    std::cout<<"m_lu:"<<m_lu<<std::endl;
+//    std::cout<<"m_ld:"<<m_ld<<std::endl;
+//    std::cout<<"m_ru:"<<m_ru<<std::endl;
+//    std::cout<<"m_rd:"<<m_rd<<std::endl;
+
+
+#endif
 //    // offset++
 //   std::cout<<"distance:   "<<tv.norm()<<std::endl;
 
@@ -219,8 +248,7 @@ void AngleSolve::yawPitchSolve(Vector3d &Pos)
 
 double AngleSolve::getFlyTime(Eigen::Vector3d &pos)
 {
-    fly_time = pos.norm() / bullet_speed;
-    return fly_time;
+    return pos.norm() / bullet_speed;
 }
 
 

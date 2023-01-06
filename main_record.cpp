@@ -24,7 +24,6 @@ int main()
     autoShoot.clone(robot);
     ArmorTracker autoTrack;
     autoTrack.clone(robot);
-    Skalman Singer;
     std::vector<Armor> autoTargets;
     Eigen::Vector3d predicted_position;
     Mat src;
@@ -52,42 +51,55 @@ int main()
 //            sendAngle = autoTrack.finalResult(src,autoTargets, start);
             if (!autoTargets.empty())
             {
+
                 printf("---------------main get target!!!---------------\n");
-                sort(autoTargets.begin(),autoTargets.end(),
-                     [](Armor &armor1,Armor &armor2){
-                    return armor1.grade > armor2.grade;});
+//                sort(autoTargets.begin(),autoTargets.end(),
+//                     [](Armor &armor1,Armor &armor2){
+//                    return armor1.grade > armor2.grade;});
                 double now_time = (double)getTickCount();
-                if(time == -1)
+                src.copyTo(autoTrack._src);
+                if(autoTrack.locateEnemy(autoTargets,now_time))
                 {
-                    time = now_time;
-                    continue;
+                    //todo:show state
+                    std::cout<<"track!!!"<<autoTrack.tracker_state<<"  id: "<<autoTrack.tracking_id<<std::endl;
                 }
-                double dt = (now_time - time) / (double)getTickFrequency();
-                time = now_time;
-                Eigen::Vector3d imuPos = autoTrack.pixel2imu(autoTargets[0]);
-                circle(src,autoTargets[0].center,3,Scalar(255,0,0),-1);
-//                std::cout<<"imuPos:"<<imuPos<<std::endl;
-//                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(imuPos);
-//                std::cout<<"airPos:"<<airPos<<std::endl;
-                Eigen::Matrix<double,2,1> measure(imuPos(0,0),imuPos(1,0));
-                std::cout<<measure<<std::endl;
-                double all_time = SHOOT_DELAY + autoTrack.getFlyTime(imuPos);
-                ////////////////Singer predictor//////////////////////////////
-                Singer.PredictInit(dt);
-//                std::cout<<"dt:"<<dt<<std::endl;
-                std::cout<<"predict_front:"<<Singer.predict(false)<<std::endl;
-                std::cout<<"correct:"<<Singer.correct(measure)<<std::endl;
-                Singer.PredictInit(all_time);
-                Eigen::Matrix<double,6,1> predicted_result = Singer.predict(true);
-                std::cout<<"result:"<<predicted_result<<std::endl;
-                predicted_position << predicted_result(0,0),predicted_result(3,0),imuPos(2,0);
-//                std::cout<<"predict_pos:"<<predicted_position<<std::endl;
-                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(predicted_position);
-                cv::Point pixelPos = autoTrack.imu2pixel(airPos);
-                ////////////////Singer predictor//////////////////////////////
+                else
+                {
+                    std::cout<<"loss!!!"<<std::endl;
+                }
+//                if(time == -1)
+//                {
+//                    time = now_time;
+//                    continue;
+//                }
+//                double dt = (now_time - time) / (double)getTickFrequency();
+//                time = now_time;
+//                Eigen::Vector3d imuPos = autoTrack.pixel2imu(autoTargets[0]);
+//                circle(src,autoTargets[0].center,5,Scalar(255,0,0),-1);
+////                std::cout<<"imuPos:"<<imuPos<<std::endl;
+////                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(imuPos);
+////                std::cout<<"airPos:"<<airPos<<std::endl;
+//                Eigen::Matrix<double,2,1> measure(imuPos(0,0),imuPos(1,0));
+////                std::cout<<measure<<std::endl;
+//                double all_time = SHOOT_DELAY + autoTrack.getFlyTime(imuPos);
+//                ////////////////Singer predictor//////////////////////////////
+//                Singer.PredictInit(dt);
+////                std::cout<<"dt:"<<dt<<std::endl;
+//                /*std::cout<<"predict_front:"<<*/Singer.predict(false)/*<<std::endl*/;
+//                /*std::cout<<"correct:"<<*/Singer.correct(measure)/*<<std::endl*/;
+//                Singer.PredictInit(all_time);
+//                Eigen::Matrix<double,6,1> predicted_result = Singer.predict(true);
+////                std::cout<<"result:"<<predicted_result<<std::endl;
+//                predicted_position << predicted_result(0,0),predicted_result(3,0),imuPos(2,0);
+////                std::cout<<"predict_pos:"<<predicted_position<<std::endl;
+//                Eigen::Vector3d airPos = autoTrack.airResistanceSolve(predicted_position);
 //                cv::Point pixelPos = autoTrack.imu2pixel(airPos);
+//                ////////////////Singer predictor//////////////////////////////
+////                cv::Point pixelPos = autoTrack.imu2pixel(airPos);
 //                std::cout<<pixelPos<<std::endl;
-                circle(src,pixelPos,3,Scalar(0,0,255),-1);
+//                circle(src,pixelPos,5,Scalar(0,0,255),-1);
+//                imshow("src",src);
+
 
 
 
@@ -99,8 +111,7 @@ int main()
                 printf("----------------no target\n---------------");
 //                waitKey(0);
             }
-            imshow("src",src);
-            if (waitKey(10) == 27)
+            if (waitKey(1) == 27)
             {
 //                camera_warrper->~Camera();
                 break;

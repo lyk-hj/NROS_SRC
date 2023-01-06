@@ -25,9 +25,8 @@ struct Light : public cv::RotatedRect     //灯条结构体
         bottom = (p[2] + p[3]) / 2;
         height = POINT_DIST(top, bottom);
         width = POINT_DIST(p[0], p[1]);
-//        angle = box.angle;
          angle = top.x < bottom.x ? box.angle : 90 + box.angle;
-        if(fabs(bottom.x - top.x) < 0.01) angle = 0;
+        if(fabs(bottom.x - top.x) < 0.01) angle = 90;
         //angle = atan2(fabs(centerI.y - centerJ.y),(centerI.x - centerJ.x));
     }
 
@@ -70,7 +69,7 @@ public:
 
     std::vector<Armor> autoAim(const cv::Mat &src); //将最终目标的坐标转换到摄像头原大小的
 
-    double cnt;
+    int cnt_count;
 
 private:
     int binThresh;
@@ -81,7 +80,7 @@ private:
     double light_max_hw_ratio;   // different distance and focus
     double light_min_area_ratio;   // RotatedRect / Rect
     double light_max_area_ratio;
-    double light_area_max;
+    double light_max_area;
 
 
     //armor_judge_condition
@@ -98,7 +97,7 @@ private:
     //armor_grade_condition
     double near_standard;
     int grade_standard;
-    int height_standard;
+    double height_standard;
 
     //armor_grade_project_ratio
     double id_grade_ratio;
@@ -108,9 +107,6 @@ private:
     cv::Mat _src;  // 裁剪src后的ROI
     cv::Mat originSrc;
     cv::Mat _binary;
-    std::vector<cv::Mat> temps;
-
-    Armor lastArmor;
 
     std::vector<Light> candidateLights; // 筛选的灯条
     std::vector<Armor> candidateArmors; // 筛选的装甲板

@@ -44,7 +44,7 @@ bool Camera::init()
 	CameraSetAeState(h_camera, false);
 
 	//降低曝光时间，一般为了防止图像拖影将曝光时间调为2毫秒以下，该函数以微秒为单位
-	CameraSetExposureTime(h_camera, 3000.);
+	CameraSetExposureTime(h_camera, 2000.);
 	//CameraSetExposureTime(h_camera, 15000.0);
 
 	//调高图像模拟增益值，使得图像亮度提高
@@ -80,37 +80,6 @@ bool Camera::init()
 	return true;
 }
 
-bool Camera::read_frame_raw()
-{
-	//获取相机句柄对应地相机设备采获的图
-	if (CameraGetImageBuffer(h_camera, &frame_h, &pbybuffer, 100000) == CAMERA_STATUS_SUCCESS)
-	{
-		if (ipiimage)
-		{
-			//将图像数据头指针释放
-			cvReleaseImageHeader(&ipiimage);
-		}
-		//创建raw图像数据的头指针
-		ipiimage = cvCreateImageHeader(cvSize(frame_h.iWidth, frame_h.iHeight), IPL_DEPTH_8U, 1);
-
-		//由于sdk读取数据是从底部到顶部读取，所以要将图像数据垂直翻转
-		//CameraFlipFrameBuffer(pbybuffer, &frame_h, 3);
-
-		//将原始图像数据缓冲区中的图像数据赋给头指针
-		cvSetData(ipiimage, pbybuffer, frame_h.iWidth);
-
-
-
-		return true;
-
-	}
-
-	else
-	{
-		return false;
-	}
-}
-
 bool Camera::read_frame_rgb()
 {
 
@@ -118,20 +87,23 @@ bool Camera::read_frame_rgb()
 	{
 		//将原始图像数据转为bgr图像数据储存到rgb_buffer中
 		CameraImageProcess(h_camera, pbybuffer, rgb_buffer, &frame_h);
-		if (ipiimage)
-		{
-			//释放掉图像数据的头指针，相当于释放全部数据
-			cvReleaseImageHeader(&ipiimage);
-		}
+//		if (ipiimage)
+//		{
+//			//释放掉图像数据的头指针，相当于释放全部数据
+//			cvReleaseImageHeader(&ipiimage);
+//		}
+//
+//		//新建一个图像数据头指针
+//		ipiimage = cvCreateImageHeader(cvSize(frame_h.iWidth, frame_h.iHeight), IPL_DEPTH_8U, channel);
+//
+//		//将图像数据垂直翻转
+		CameraFlipFrameBuffer(rgb_buffer, &frame_h, 1);
+//
+//		//将rgb图像数据缓冲区里的图像数据给头指针指向
+//		cvSetData(ipiimage, rgb_buffer, frame_h.iWidth * channel);
 
-		//新建一个图像数据头指针
-		ipiimage = cvCreateImageHeader(cvSize(frame_h.iWidth, frame_h.iHeight), IPL_DEPTH_8U, channel);
+        src = cv::Mat(cvSize(frame_h.iWidth,frame_h.iHeight),CV_8UC3,rgb_buffer);
 
-		//将图像数据垂直翻转
-		//CameraFlipFrameBuffer(rgb_buffer, &frame_h, 3);
-
-		//将rgb图像数据缓冲区里的图像数据给头指针指向
-		cvSetData(ipiimage, rgb_buffer, frame_h.iWidth * channel);
 
 
 
@@ -146,20 +118,12 @@ bool Camera::read_frame_rgb()
 
 }
 
-
-//bool Camera::transform_src_data(cv::Mat &src)
-//{
-//	//将IPIImage原始数据图像转化为opencv的Mat图像类型
-//	src = cv::cvarrToMat(ipiimage).clone();
-//	return true;
-//}
-
 bool Camera::release_data()
 {
 	//将图像缓冲区中的图像数据释放掉
 	CameraReleaseImageBuffer(h_camera, pbybuffer);
 
-	cvReleaseImageHeader(&ipiimage);
+//	cvReleaseImageHeader(&ipiimage);
 	return true;
 }
 
@@ -196,6 +160,7 @@ bool Camera::camera_record()
 		return true;
 	}
 
+    return false;
 
 }
 
